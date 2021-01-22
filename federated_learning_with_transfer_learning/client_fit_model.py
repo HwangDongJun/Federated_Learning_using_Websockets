@@ -3,12 +3,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import numpy as np
-import PIL.Image as Image
-from PIL import ImageFile
 import tensorflow as tf
 import tensorflow_hub as hub
 from tensorflow.keras import layers
 import matplotlib.pylab as plt
+
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 
 class transfer_learning_fit(object):
@@ -22,7 +23,7 @@ class transfer_learning_fit(object):
 		self.model_link = config['model']
 		self.class_names = np.array(['book', 'laptop', 'phone', 'wash', 'water'])
 
-		tf.random.set_seed(99)
+		#tf.random.set_seed(99)
 
 	def image_generator(self):
 		image_gen_train = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255,
@@ -43,13 +44,16 @@ class transfer_learning_fit(object):
 												target_size=self.image_shape,
 												classes=list(self.class_names))
 		val_data_dir = os.path.abspath('CLIENT TEST DATASET PATH')
-		val_data_gen = gen_val.flow_from_directory(directory=str(val_data_dir),
-											batch_size=self.batch_size,
-											color_mode='rgb',
-											shuffle=True,
-											target_size=self.image_shape,
-											classes=list(self.class_names))
-		return train_data_gen, val_data_gen
+
+		# Clients use only learning data and run tests on the server.
+		#val_data_gen = gen_val.flow_from_directory(directory=str(val_data_dir),
+		#									batch_size=self.batch_size,
+		#									color_mode='rgb',
+		#									shuffle=True,
+		#									target_size=self.image_shape,
+		#									classes=list(self.class_names))
+
+		return train_data_gen
 
 	def select_optimizer(self, opti, lr):
 		if opti == 'adam':
@@ -62,15 +66,19 @@ class transfer_learning_fit(object):
 		])
 		return model
 
-	def build_model(self):
+	def build_model(self, weight=None):
 		feature_vector_url = self.model_link
 		feature_vector_layer = hub.KerasLayer(feature_vector_url,
 										input_shape=self.image_shape+(3,))
 
-		# train setting false
-		feature_vector_layer.trainable = False
+		if weight == None:
+			# train setting false
+			feature_vector_layer.trainable = False # freeze
+		else: # Previously learned weight file existence.
+			feature_vector_layer.trainable = True
 
 		made_model = self.set_model(feature_vector_layer)
+		print(made_model.summary())
 		made_model.compile(
 			optimizer=self.select_optimizer(self.optimizer, self.learning_rate),
 			loss='categorical_crossentropy',
@@ -79,42 +87,51 @@ class transfer_learning_fit(object):
 		return made_model, feature_vector_layer
 
 	def train_model_tosave(self, weight=None):
-		local_model, feature_layer = self.build_model()
-		gen_train_data, gen_val_data = self.gen_train_val_data()
-		local_model.fit_generator(gen_train_data, epochs=self.epochs,
-					validation_data=gen_val_data)
+		callback = tf.kears.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-		# model layer 0번째 set weight
-		if weight != None:
-			local_model.layers[1].set_weights(weight)
+		if weight == None:
+			local_model, feature_layer = self.build_model()
+			gen_train_data = self.gen_train_val_data()
+			local_model.fit_generator(gen_train_data, epochs=self.epochs, callbacks=[callback])
 
-		# Export model
-		export_path = 'EXPORT MODEL PATH' 
-		local_model.save(export_path, save_format='tf')
+			# Export model
+			export_path = 'EXPORT MODEL PATH' 
+			local_model.save(export_path, save_format='tf')
 
-		return feature_layer, export_path, gen_train_data, gen_val_data
+			return feature_layer, export_path, gen_train_data
+		else:
+			local_model, feature_layer = self.build_model()
+			gen_train_data = self.gen_train_val_data()
+			local_model.set_weights(weight)
+			local_model.fit_generator(gen_train_data, epochs=self.epochs, callbacks=[callback])
 
-	def get_weight_finetune_model(self, expath, feature_layer, gtrain_data, gval_data):
+			return local_model.get_weights()
+
+	def get_weight_finetune_model(self, expath, feature_layer, gtrain_data):
 		reloaded_model = tf.keras.models.load_model(expath)
 		
 		feature_layer.trainable = True
 
+		callback = tf.kears.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+		# Decrease the value of the learning rate during the fine-tuning process.
 		reloaded_model.compile(
 			optimizer=self.select_optimizer(self.optimizer, self.learning_rate*0.1),
 			loss='categorical_crossentropy',
-			metrics=['accuracy'])
+			metrics=['acc'])
 		reloaded_model.fit_generator(gtrain_data, epochs=self.epochs+(self.epochs*2),
-						initial_epoch=self.epochs, validation_data=gval_data)
+						initial_epoch=self.epochs, callbacks=[callback])
 
-		return reloaded_model.get_weights() # Dense layer weight는 제외하고 반환
+		return reloaded_model.get_weights()
 
 	def manage_train(self):
 		get_weights = list()
 		if self.weights != list():
-			flayer, epath, gtrain, gval = self.train_model_tosave(self.weights)
-			get_weights = self.get_weight_finetune_model(epath, flayer, gtrain, gval)
-		else: # 처음 학습이면 일반 방식 그대로 사용
-			flayer, epath, gtrain, gval = self.train_model_tosave()
-			get_weights = self.get_weight_finetune_model(epath, flayer, gtrain, gval)
+			training_weight = self.train_model_tosave(self.weights)
 
-		return get_weights
+			return training_weight
+		else: # 처음 학습이면 일반 방식 그대로 사용
+			flayer, epath, gtrain = self.train_model_tosave()
+			get_weights = self.get_weight_finetune_model(epath, flayer, gtrain)
+
+			return get_weights

@@ -32,14 +32,16 @@ async def check_configuration(config_msg):
 # send num 1 -> check connect to server
 async def check_connect():
 	get_weights = list()
-	async with websockets.connect("ws://localhost:8000", max_size=2**25) as websocket:
-		await asyncio.sleep(2)
-		await websocket.send("1")
+	# localhost -> IP settings for external servers.
+	# INPORTANT! For max_size parameter, unify with websocket_server.py file.
+	async with websockets.connect("ws://localhost:8000", max_size=2**29) as websocket:
+		await asyncio.sleep(1)
+		await websocket.send("1") # Message for connection verification.
 		right_connection = await websocket.recv()
-		print(right_connection)
 		if right_connection == "1":
 			config_msg = await websocket.recv() # get number 1 -> next recv configuration
-			decode_config_msg = json.loads(config_msg)
+			print("received config_msg from server!")
+			decode_config_msg = json.loads(config_msg, object_hook=as_python_object)
 
 			model_configuration = await check_configuration(decode_config_msg['config'])
 
@@ -49,13 +51,12 @@ async def check_connect():
 				previous_weight_info = list()
 
 			get_weights = await train_model(previous_weight_info, model_configuration)
-			
-			print(get_weights[-1])
 
 			weight_encoding = pickle.dumps(get_weights)
-			await websocket.send(weight_encoding)	
+			await websocket.send(weight_encoding)
+			await websocket.recv()
 
 # connect to server
 if __name__ == '__main__':
 	asyncio.get_event_loop().run_until_complete(check_connect())
-	asyncio.get_event_loop().run_forever()
+	#asyncio.get_event_loop().run_forever()
