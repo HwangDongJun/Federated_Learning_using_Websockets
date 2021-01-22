@@ -11,14 +11,25 @@ $ pip3 install websockets
 > asyncio 설치
 $ pip3 install asyncio
 ```
-- 
-- File structure
-  - federated learning with transfer learning
-  - federated learning without transfer learning
-  - federated transfer learning with differential privacy
+- tensorflow (≥ 2.4.0), tensorflow hub (≥ 0.10.0)
+```
+> tensorflow 설치
+$ pip3 install tensorflow
+> tensorflow-hub 설치
+$ pip3 install tensorflow-hub
+```
+
+- Dictionary structure
+  - federated_learning_with_transfer_learning
+  - federated_learning_without_transfer_learning
+  - federated_transfer_learning_with_differential_privacy
 
 ## 주의사항
-- Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 없다 가정한 구현임
-  - 정상 동작을 가정한 구현을 의미
+- Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 제외한 구현
+  - 정상 동작만을 가정한 구현을 의미
 - 현재 구현 중임을 알림
   - 2020.07.05 ~
+    - with transfer learning, without transfer learning, differntial privacy 코드파일 추가
+  - 2021.01.22 ~
+    - with transfer learning 코드 파일 및 설명 하나의 폴더로 분리
+
