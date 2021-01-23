@@ -8,7 +8,7 @@ import argparse
 from base64 import b64decode
 
 from realtime_object_detection_yolo import object_detection
-from client_fit_model_dp import transfer_learning_fit
+from client_model_dp_opti import transfer_learning_fit
 
 
 # training model
@@ -29,9 +29,10 @@ async def check_configuration(config_msg):
 			'optimizer': check_info[4],
 			'model' : check_info[5],
 			'l2_norm_clip' : float(check_info[6]),
-			#'noise_multiplier' : float(check_info[7]),
-			'noise_multiplier' : 10,
-			'num_microbatches' : int(check_info[8])
+			'noise_multiplier' : float(check_info[7]),
+			'num_microbatches' : int(check_info[8]),
+			'total_data_size' : int(check_info[9]),
+			'delta' : float(check_info[10])
 	}
 	return model_info
 
@@ -43,7 +44,6 @@ def as_python_object(dct):
 # send num 1 -> check connect to server
 async def check_connect():
 	get_weights = list()
-	#try:
 	async with websockets.connect("ws://localhost:8000", max_size=2**29) as websocket:
 		await asyncio.sleep(2)
 		await websocket.send("1")
@@ -63,12 +63,6 @@ async def check_connect():
 			
 			weight_encoding = pickle.dumps(get_weights)
 			await websocket.send(weight_encoding)	
-	#except websockets.exceptions.ConnectionClosed:
-		#print("exception ConnectionClosed!!")
-		#async with websockets.connect("ws://localhost:8000") as websocket:
-			#weight_encoding = pickle.dumps(get_weights)
-			#await asyncio.sleep(0.1)
-			#await websocket.send(weight_encoding)
 
 # connect to server
 if __name__ == '__main__':
