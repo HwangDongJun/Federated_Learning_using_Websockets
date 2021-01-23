@@ -3,7 +3,7 @@
   - 적용 모델 -> MobileNet V2 / EfficientNet B0
  
  #### Server side
- - 서버의 경우 [federated_learning_with_transfer_leanring의 websocker_server.py](https://github.com/HwangDongJun/Federated_Learning_using_Websockets/new/master/federated_learning_with_transfer_learning/websocket_server.py)과 코드가 동일하므로 추가하지 않음
+ - 서버의 경우 [federated_learning_with_transfer_leanring의 websocker_server.py](https://github.com/HwangDongJun/Federated_Learning_using_Websockets/blob/master/federated_learning_with_transfer_learning/websocket_server.py)과 코드가 동일하므로 추가하지 않음
  
  #### Client side
  - websocket_client.py
