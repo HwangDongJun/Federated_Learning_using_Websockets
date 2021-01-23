@@ -11,6 +11,19 @@ from tensorflow.keras import layers
 import matplotlib.pylab as plt
 import efficientnet.tfkeras as efn
 
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]=""
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+	try:
+		for gpu in gpus:
+			tf.config.experimental.set_memory_growth(gpu, True)
+		logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+		print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+	except RuntimeError as e:
+		print(e)
+
 
 class transfer_learning_fit(object):
 	def __init__(self, config, weights):
@@ -36,7 +49,7 @@ class transfer_learning_fit(object):
 	def gen_train_val_data(self):
 		gen_train, gen_val = self.image_generator()
 
-		train_data_dir = os.path.abspath('/home/dnlabblocksci/websocket/3/dataset/data_balanced/new_train/client1')
+		train_data_dir = os.path.abspath('INPUT YOUR TRANING DATA SET PATH')
 		train_data_gen = gen_train.flow_from_directory(directory=str(train_data_dir),
 											batch_size=self.batch_size,
 											color_mode='rgb',
@@ -51,10 +64,6 @@ class transfer_learning_fit(object):
 			return tf.keras.optimizers.Adam(learning_rate=lr)
 
 	def set_model(self, vector_layer):
-		#model = tf.keras.Sequential([
-			#tf.keras.applications.EfficientNetB1(weights=None, classes=5)
-			#layers.Dense(5, activation='softmax')
-		#])
 		#efficient_net = efn.EfficientNetB0(
 		#	weights=None,
 		#	input_shape=self.image_shape+(3,),
@@ -106,24 +115,13 @@ class transfer_learning_fit(object):
 			local_model, feature_layer = self.build_model()
 			gen_train_data = self.gen_train_val_data()
 			local_model.fit_generator(gen_train_data, epochs=self.epochs, callbacks=[callback])
-
-			# Export model
-			#export_path = './save_model/client1/' 
-			#local_model.save(export_path, save_format='tf')
-
-			#return feature_layer, export_path, gen_train_data
 		else:
 			local_model, feature_layer = self.build_model()
-			# 여기서부터는 코드 중복이 많음 -> 데이터를 인위적으로 나눠야 하기에 중복 코드로 둠(조금씩 변경)
-			#gen_train_data, gen_val_data = self.gen_train_val_data(2)
-			#local_model.fit_generator(gen_train_data, epochs=self.epochs,
-					#validation_data=gen_val_data)
 			gen_train_data = self.gen_train_val_data()
 			local_model.set_weights(weight)
 			local_model.fit_generator(gen_train_data, epochs=self.epochs, callbacks=[callback])
 			
 		return local_model.get_weights()
-			
 
 	def get_weight_finetune_model(self, expath, feature_layer, gtrain_data):
 		reloaded_model = tf.keras.models.load_model(expath)
@@ -136,8 +134,6 @@ class transfer_learning_fit(object):
 			optimizer=self.select_optimizer(self.optimizer, self.learning_rate*0.1),
 			loss='categorical_crossentropy',
 			metrics=['accuracy'])
-		#reloaded_model.fit_generator(gtrain_data, epochs=self.epochs+(self.epochs*2),
-						#initial_epoch=self.epochs, validation_data=gval_data)
 		reloaded_model.fit_generator(gtrain_data, epochs=self.epochs+(self.epochs*2),
 						initial_epoch=self.epochs, callbacks=[callback])
 

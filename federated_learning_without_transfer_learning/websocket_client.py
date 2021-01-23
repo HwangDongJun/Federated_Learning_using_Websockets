@@ -4,8 +4,6 @@ import websockets
 import pickle
 import json
 import numpy as np
-import argparse
-from base64 import b64decode
 
 from realtime_object_detection_yolo import object_detection
 from ntf_client_fit_model import transfer_learning_fit
@@ -31,18 +29,14 @@ async def check_configuration(config_msg):
 	}
 	return model_info
 
-def as_python_object(dct):
-	if '_python_object' in dct:
-		return pickle.loads(b64decode(dct['_python_object'].encode('utf-8')))
-	return dct
-
 # send num 1 -> check connect to server
 async def check_connect():
 	get_weights = list()
-	#try:
+	# localhost -> IP settings for external servers.
+	# INPORTANT! For max_size parameter, unify with websocket_server.py file.
 	async with websockets.connect("ws://localhost:8000", max_size=2**29) as websocket:
 		await asyncio.sleep(1)
-		await websocket.send("1")
+		await websocket.send("1") # Message for connection verification.
 		right_connection = await websocket.recv()
 		if right_connection == "1":
 			config_msg = await websocket.recv() # get number 1 -> next recv configuration
@@ -50,23 +44,17 @@ async def check_connect():
 			decode_config_msg = json.loads(config_msg, object_hook=as_python_object)
 
 			model_configuration = await check_configuration(decode_config_msg['config'])
-			
+
 			if decode_config_msg['previous_weight'] != list():
 				previous_weight_info = np.asarray(decode_config_msg['previous_weight'])
 			else:
 				previous_weight_info = list()
-			
+
 			get_weights = await train_model(previous_weight_info, model_configuration)
-			
+
 			weight_encoding = pickle.dumps(get_weights)
 			await websocket.send(weight_encoding)
 			await websocket.recv()
-	#except websockets.exceptions.ConnectionClosed:
-		#print("exception ConnectionClosed!!")
-		#async with websockets.connect("ws://localhost:8000") as websocket:
-			#weight_encoding = pickle.dumps(get_weights)
-			#await asyncio.sleep(0.1)
-			#await websocket.send(weight_encoding)
 
 # connect to server
 if __name__ == '__main__':
