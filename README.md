@@ -1,4 +1,7 @@
 # Federated Learning using Websockets
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 - python websockets, asyncio 모듈을 사용한 비동기 방식 Federated Learning 구현 (서버와 클라이언트의 통신상에서 발생할 수 있는 예외처리 미구현)
   - Federated Learning을 사용한 사용자 활동 인식 데이터 보호 (개인 정보 보호)
   - 클라이언트마다 다른 데이터 특징과 적은 데이터의 문제점을 보완하기 위한 Transfer Learning 적용
