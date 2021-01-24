@@ -3,19 +3,19 @@
   - Federated Learning을 사용한 사용자 활동 인식 데이터 보호 (개인 정보 보호)
   - 클라이언트마다 다른 데이터 특징과 적은 데이터의 문제점을 보완하기 위한 Transfer Learning 적용
 
-## Getting Started (Ubuntu 환경)
-- python websockets, asyncio 모듈 설치 필수
+## Getting Started (Ubuntu Environment)
+- python websockets, asyncio module installation required.
 ```
-> websockets 설치
+> websockets install
 $ pip3 install websockets
-> asyncio 설치
+> asyncio install
 $ pip3 install asyncio
 ```
 - tensorflow (≥ 2.4.0), tensorflow hub (≥ 0.10.0)
 ```
-> tensorflow 설치
+> tensorflow install
 $ pip3 install tensorflow
-> tensorflow-hub 설치
+> tensorflow-hub install
 $ pip3 install tensorflow-hub
 ```
 
@@ -28,7 +28,7 @@ $ pip3 install tensorflow-hub
 - Pre-processing of image data for human activity recognition (Methods to increase model training performance)
   - [Object detection with YOLOv3](https://github.com/HwangDongJun/object-detection-with-YOLOv3)
   
-## 주의사항
+## Notice!
 - Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 제외한 구현
   - 정상 동작만을 가정한 구현을 의미
 - 현재 구현 중임을 알림
