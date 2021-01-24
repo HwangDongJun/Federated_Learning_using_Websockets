@@ -28,6 +28,10 @@ $ pip3 install tensorflow-hub
 - Pre-processing of image data for human activity recognition (Methods to increase model training performance)
   - [Object detection with YOLOv3](https://github.com/HwangDongJun/object-detection-with-YOLOv3)
   
+## Home IoT service through human activity recognition repository link
+- IoT device control using the smart lighting [Hue](https://www.philips-hue.com/ko-kr)
+  - [IoT(Hue) performance measure](https://github.com/HwangDongJun/iot-performace-measure)
+  
 ## Notice!
 - Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 제외한 구현
   - 정상 동작만을 가정한 구현을 의미
