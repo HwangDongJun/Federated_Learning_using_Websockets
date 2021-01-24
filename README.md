@@ -24,6 +24,10 @@ $ pip3 install tensorflow-hub
   - federated_learning_without_transfer_learning
   - federated_transfer_learning_with_differential_privacy
 
+## Data preprocessing repository link
+- Pre-processing of image data for human activity recognition (Methods to increase model training performance)
+  - [Object detection with YOLOv3](https://github.com/HwangDongJun/object-detection-with-YOLOv3)
+  
 ## 주의사항
 - Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 제외한 구현
   - 정상 동작만을 가정한 구현을 의미
