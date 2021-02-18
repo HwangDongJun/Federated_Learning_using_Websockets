@@ -8,7 +8,8 @@ import argparse
 from base64 import b64decode
 
 from realtime_object_detection_yolo import object_detection
-from client_model_dp_opti import transfer_learning_fit
+#from client_model_dp_opti import transfer_learning_fit
+from dp_client_fit_model import transfer_learning_fit
 
 
 # training model
