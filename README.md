@@ -38,7 +38,7 @@ $ pip3 install tensorflow-hub
 ## Notice!
 - Federated Learning을 위한 통신 구현 중 클라이언트에서 발생할 수 있는 예외 상황은 제외한 구현
   - 정상 동작만을 가정한 구현을 의미
-- 현재 구현 중임을 알림
+- Commit Log
   - 2020.07.05 ~
     - with transfer learning, without transfer learning, differntial privacy 코드파일 추가
   - 2021.01.22 ~
